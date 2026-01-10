@@ -1,6 +1,8 @@
+
 {% extends 'layout.html' %}
 
 {% block content %}
+
 <style>
     .stats-grid-mobile {
         display: grid !important;
@@ -22,7 +24,6 @@
         font-weight: bold;
     }
 
-   
     @media (max-width: 600px) {
         .hide-on-mobile { display: none; }
         table { font-size: 0.9rem; }
@@ -43,7 +44,7 @@
 
 {% if stats %}
 <article>
-    <header><strong>📊 粉丝大数据</strong></header>
+    <header><strong>📊 粉丝大数据 </strong></header>
     <div class="grid stats-grid-mobile" style="text-align: center;">
         <div>
             <h3>{{ stats['粉丝总数'] }}</h3>
@@ -81,9 +82,7 @@
             {% for m in members %}
             <tr>
                 <th scope="row">{{ m.name }}</th>
-                <td>
-                    <span class="role-badge">{{ m.role }}</span>
-                </td>
+                <td><span class="role-badge">{{ m.role }}</span></td>
                 <td class="hide-on-mobile">{{ m.gender }}</td>
                 <td class="hide-on-mobile">{{ m.age }}</td>
                 <td>{{ m.join_date|string|truncate(10, True, '') }}</td>
@@ -95,28 +94,117 @@
 
 <hr>
 
+<h3>💿 专辑 & 歌曲 (Discography)</h3>
+<div class="grid">
+    {% for album in albums %}
+    <article style="padding: 0;">
+        <header style="padding: 15px; background: rgba(0,0,0,0.2);">
+            <hgroup style="margin-bottom: 0;">
+                <h4 style="font-size: 1.1rem;">{{ album.title }}</h4>
+                <small>📅 {{ album.release_date }} | ⭐ {{ album.avg_score }}</small>
+            </hgroup>
+        </header>
+        <div style="padding: 15px;">
+            <details>
+                <summary>查看 {{ album.songs | length }} 首收录曲</summary>
+                <table role="grid" style="margin-bottom: 0;">
+                    {% for song in album.songs %}
+                    <tr>
+                        <td style="padding: 8px;">🎵 {{ song.title }}</td>
+                        <td style="text-align: right; opacity: 0.7; padding: 8px;">{{ song.duration }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </details>
+        </div>
+    </article>
+    {% else %}
+    <p>暂无专辑数据</p>
+    {% endfor %}
+</div>
+
+<hr>
+
+
+<h3>🎫 近期演出 (Live Events)</h3>
+<figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>演出名称</th>
+                <th>日期</th>
+                <th class="hide-on-mobile">场馆</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for concert in concerts %}
+            <tr>
+                <td><strong>{{ concert.name }}</strong></td>
+                <td>{{ concert.concert_date }}</td>
+                <td class="hide-on-mobile">{{ concert.venue }}</td>
+                <td>
+                    {% if concert.status == '已结束' %}
+                        <small style="opacity: 0.6;">🏁 已结束</small>
+                    {% else %}
+                        <mark style="background: #e74c3c; color: white; padding: 2px 6px; font-size: 0.8rem;">🔥 {{ concert.status }}</mark>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">暂无演出信息</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+
+<hr>
+
+<h3>💬 最新乐评</h3>
+<div class="grid">
+    {% for review in reviews %}
+    <article style="padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary);">
+        <header style="margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <strong>👤 {{ review.fan_name }}</strong>
+            <small style="font-size: 0.7rem;">《{{ review.album_title }}》</small>
+        </header>
+        <div style="color: gold; font-size: 0.9rem; margin-bottom: 5px;">
+            {% for i in range(review.score | int) %}★{% endfor %} {{ review.score }}
+        </div>
+        <p style="margin-bottom: 0; font-style: italic;">“ {{ review.comment }} ”</p>
+    </article>
+    {% else %}
+    <div style="padding: 20px; text-align: center; opacity: 0.6;">
+        暂无评论，快来抢沙发！
+    </div>
+    {% endfor %}
+</div>
+
+<hr>
+
 {% if user and user.type == 'fan' %}
     <article>
-        <header><strong>📝 发表乐评 </strong></header>
+        <header><strong>📝 发表你的乐评</strong></header>
         <form action="/add_review" method="POST">
             <input type="hidden" name="album_id" value="1"> 
             <div class="grid">
                 <label>
                     评分 (0-10)
-                    <input type="number" name="score" min="0" max="10" step="0.1" required placeholder="9.5">
+                    <input type="number" name="score" min="0" max="10" step="0.1" required placeholder="10.0">
                 </label>
                 <label>
                     评论内容
-                    <input type="text" name="comment" placeholder="神专！吹爆！" required>
+                    <input type="text" name="comment" placeholder="神曲！吹爆！" required>
                 </label>
             </div>
-            <button type="submit">提交并触发榜单更新</button>
+            <button type="submit">提交评价</button>
         </form>
     </article>
 {% elif not user %}
-    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-        💡 想要打分？请 <a href="/login">登录歌迷账号</a>
+    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+        💡 想要发表评论？请 <a href="/login">登录歌迷账号</a>
     </div>
 {% endif %}
 
 {% endblock %}
+

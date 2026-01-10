@@ -86,14 +86,28 @@ def band_detail(band_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-         
+          
             cursor.execute("SELECT * FROM Band WHERE band_id = %s", (band_id,))
             band = cursor.fetchone()
             
             
             cursor.execute("SELECT * FROM Member WHERE band_id = %s", (band_id,))
             members = cursor.fetchall()
+
+          
+            cursor.execute("SELECT * FROM Concert WHERE band_id = %s ORDER BY concert_date DESC", (band_id,))
+            concerts = cursor.fetchall()
+
+           
+            cursor.execute("SELECT * FROM Album WHERE band_id = %s", (band_id,))
+            albums = cursor.fetchall()
             
+           
+            for album in albums:
+                cursor.execute("SELECT * FROM Song WHERE album_id = %s", (album['album_id'],))
+                
+                album['songs'] = cursor.fetchall()
+
            
             stats = None
             if band and band['name'] == 'MyGO!!!!!':
@@ -102,10 +116,33 @@ def band_detail(band_id):
             elif band and band['name'] == 'Ave Mujica':
                 cursor.execute("SELECT * FROM view_avemujica_fan_stats")
                 stats = cursor.fetchone()
+
+         
+            sql_reviews = """
+                SELECT r.score, r.comment, f.name as fan_name, a.title as album_title
+                FROM Review r
+                JOIN Fan f ON r.fan_id = f.fan_id
+                JOIN Album a ON r.album_id = a.album_id
+                WHERE a.band_id = %s
+                ORDER BY r.review_id DESC
+                LIMIT 10
+            """
+            cursor.execute(sql_reviews, (band_id,))
+            reviews = cursor.fetchall()
+
     finally:
         conn.close()
         
-    return render_template('detail.html', band=band, members=members, stats=stats, user=session.get('user'))
+    return render_template('detail.html', 
+                           band=band, 
+                           members=members, 
+                           stats=stats, 
+                           user=session.get('user'),
+                           albums=albums,     
+                           concerts=concerts, 
+                           reviews=reviews    
+                           )
+
 
 
 @app.route('/add_review', methods=['POST'])
