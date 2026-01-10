@@ -1,6 +1,34 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+<style>
+    .stats-grid-mobile {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .stats-grid-mobile h3 { font-size: 1.5rem !important; margin-bottom: 5px; }
+    .stats-grid-mobile small { font-size: 0.8rem; }
+
+    .role-badge {
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        background-color: #f1c40f;
+        color: #000;
+        font-weight: bold;
+    }
+
+   
+    @media (max-width: 600px) {
+        .hide-on-mobile { display: none; }
+        table { font-size: 0.9rem; }
+    }
+</style>
+
 <nav aria-label="breadcrumb">
   <ul>
     <li><a href="/">首页</a></li>
@@ -15,14 +43,14 @@
 
 {% if stats %}
 <article>
-    <header><strong>📊 实时粉丝画像 </strong></header>
-    <div class="grid" style="text-align: center;">
+    <header><strong>📊 粉丝大数据</strong></header>
+    <div class="grid stats-grid-mobile" style="text-align: center;">
         <div>
             <h3>{{ stats['粉丝总数'] }}</h3>
-            <small>总关注人数</small>
+            <small>总关注</small>
         </div>
         <div>
-            <h3>{{ stats['平均年龄'] | round(1) }} 岁</h3>
+            <h3>{{ stats['平均年龄'] | float | round(1) }} 岁</h3>
             <small>平均年龄</small>
         </div>
         <div>
@@ -44,8 +72,8 @@
             <tr>
                 <th scope="col">姓名</th>
                 <th scope="col">担当</th>
-                <th scope="col">性别</th>
-                <th scope="col">年龄</th>
+                <th scope="col" class="hide-on-mobile">性别</th>
+                <th scope="col" class="hide-on-mobile">年龄</th>
                 <th scope="col">加入时间</th>
             </tr>
         </thead>
@@ -54,11 +82,11 @@
             <tr>
                 <th scope="row">{{ m.name }}</th>
                 <td>
-                    <mark>{{ m.role }}</mark>
+                    <span class="role-badge">{{ m.role }}</span>
                 </td>
-                <td>{{ m.gender }}</td>
-                <td>{{ m.age }}</td>
-                <td>{{ m.join_date }}</td>
+                <td class="hide-on-mobile">{{ m.gender }}</td>
+                <td class="hide-on-mobile">{{ m.age }}</td>
+                <td>{{ m.join_date|string|truncate(10, True, '') }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -69,7 +97,7 @@
 
 {% if user and user.type == 'fan' %}
     <article>
-        <header><strong>📝 发表乐评 (模拟触发器)</strong></header>
+        <header><strong>📝 发表乐评 </strong></header>
         <form action="/add_review" method="POST">
             <input type="hidden" name="album_id" value="1"> 
             <div class="grid">
@@ -86,7 +114,7 @@
         </form>
     </article>
 {% elif not user %}
-    <div style="text-align: center; padding: 20px; background: #f0f0f0; border-radius: 8px; color: black;">
+    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px;">
         💡 想要打分？请 <a href="/login">登录歌迷账号</a>
     </div>
 {% endif %}
