@@ -2,17 +2,26 @@
 
 {% block content %}
 <section>
-    <h2>乐队列表</h2>
+    <hgroup>
+        <h2>乐队列表</h2>
+        <h3>选择你感兴趣的乐队查看详情</h3>
+    </hgroup>
+
     <div class="grid">
         {% for band in bands %}
-        <article>
+        <article class="band-card">
             <header>
+                <span style="font-size: 1.5rem;">
+                    {% if band.name == 'MyGO!!!!!' %}🔵{% else %}🔴{% endif %}
+                </span>
                 <strong>{{ band.name }}</strong>
             </header>
-            <p>成立时间: {{ band.founding_date }}</p>
-            <p>当前成员数: {{ band.member_count }} 人</p>
-            <footer>
-                <a href="/band/{{ band.band_id }}" role="button">查看详情 & 报表</a>
+            
+            <p style="min-height: 60px;">{{ band.intro }}</p>
+            
+            <footer style="display: flex; justify-content: space-between; align-items: center;">
+                <small>📅 成立: {{ band.founding_date }}</small>
+                <a href="/band/{{ band.band_id }}" role="button">进入后台 &rarr;</a>
             </footer>
         </article>
         {% endfor %}

@@ -1,32 +1,51 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>乐队数据库管理系统</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MyGO & Ave Mujica 数据库</title>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
+
     <style>
+        :root { --primary: #3949ab; }
         body { padding-top: 20px; }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .band-card { transition: transform 0.2s; }
+        .band-card:hover { transform: translateY(-5px); border-color: var(--primary); }
     </style>
 </head>
 <body>
+    <nav class="container-fluid">
+        <ul>
+            <li><a href="/" class="contrast" style="font-weight: 800; font-size: 1.2rem;">🎸 乐队数据库</a></li>
+        </ul>
+        <ul>
+            {% if user %}
+                <li>Hello, <strong>{{ user.name }}</strong></li>
+                <li><a href="/logout" role="button" class="secondary outline">退出</a></li>
+            {% else %}
+                <li><a href="/login" role="button">登录</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
     <main class="container">
-        <div class="nav-header">
-            <h1>🎸 乐队数据库系统</h1>
-         <div>
-                {% if user %}
-                    <span style="margin-right: 10px;">👤 欢迎, {{ user.name }}</span>
-                    <a href="/logout" role="button" class="secondary outline">退出</a>
-                {% else %}
-                    <a href="/login" role="button">登录</a>
-                {% endif %}
-            </div>
-        </div>
-            <a href="/" role="button" class="outline">返回首页</a>
-        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <article style="background-color: #ffe6e6; color: #d32f2f; border-color: #d32f2f;">
+                    {{ messages[0] }}
+                </article>
+            {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
-    <footer class="container">
-        <small>Database Design Assignment © 2026</small>
+
+    <footer class="container" style="text-align: center; margin-top: 50px; opacity: 0.6;">
+        <small>Database Project © 2026 • Powered by Flask & TiDB</small>
     </footer>
 </body>
 </html>

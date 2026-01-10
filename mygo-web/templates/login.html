@@ -1,29 +1,28 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<article style="max-width: 400px; margin: 0 auto;">
-    <header><strong>🔐 用户登录</strong></header>
-    
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div style="color: red; margin-bottom: 10px;">
-          {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <form method="post">
-        <label for="username">用户名 / 乐队名</label>
-        <input type="text" id="username" name="username" placeholder="例如: 邦邦人 / MyGO!!!!!">
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <article style="width: 100%; max-width: 450px;">
+        <header style="text-align: center;">
+            <strong>🔐 身份验证</strong>
+        </header>
         
-        <label for="password">密码</label>
-        <input type="password" id="password" name="password" placeholder="默认: 123">
+        <form method="post">
+            <label for="username">用户名 / 乐队名</label>
+            <input type="text" id="username" name="username" placeholder="Fan Name / Band Name" required>
+            
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            
+            <button type="submit" class="contrast">立即登录</button>
+        </form>
         
-        <button type="submit">登录</button>
-    </form>
-    
-    <footer>
-        <small>测试账号: 邦邦人 / 123</small>
-    </footer>
-</article>
+        <footer style="font-size: 0.8em; color: gray;">
+            <p>测试账号：<br>
+            • 歌迷: 邦邦人 / 123456<br>
+            • 乐队: MyGO!!!!! / 123456</p>
+        </footer>
+    </article>
+</div>
 {% endblock %}
+
