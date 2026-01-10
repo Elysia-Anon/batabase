@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<hgroup>
+    <h2>{{ band.name }}</h2>
+    <h3>队长: {{ band.leader_name }}</h3>
+</hgroup>
+
+<hr>
+
+<h3>🎤 成员名单</h3>
+<figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>担当位置</th>
+                <th>年龄</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in members %}
+            <tr>
+                <td>{{ m.name }}</td>
+                <td>{{ m.gender }}</td>
+                <td>{{ m.role }}</td>
+                <td>{{ m.age }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+
+{% if stats %}
+<hr>
+<h3>📊 粉丝大数据 (基于视图 View)</h3>
+<div class="grid">
+    <article>
+        <header>粉丝总数</header>
+        {{ stats['粉丝总数'] }} 人
+    </article>
+    <article>
+        <header>平均年龄</header>
+        {{ stats['平均年龄'] }} 岁
+    </article>
+    <article>
+        <header>本科率</header>
+        {{ stats['本科粉丝数'] }} / {{ stats['粉丝总数'] }}
+    </article>
+</div>
+{% endif %}
+
+{% endblock %}
+
+<hr>
+
+{% if user and user.type == 'fan' %}
+    <h3>📝 发表乐评</h3>
+    <form action="/add_review" method="POST">
+        <input type="hidden" name="album_id" value="1"> 
+        
+        <div class="grid">
+            <label>
+                评分 (0-10)
+                <input type="number" name="score" min="0" max="10" step="0.1" required>
+            </label>
+            <label>
+                评论内容
+                <input type="text" name="comment" placeholder="说点什么..." required>
+            </label>
+        </div>
+        <button type="submit">提交评价</button>
+    </form>
+{% elif not user %}
+    <p>💡 <a href="/login">登录</a> 后可以发表乐评。</p>
+{% endif %}

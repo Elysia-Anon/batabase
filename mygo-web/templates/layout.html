@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>乐队数据库管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        body { padding-top: 20px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="nav-header">
+            <h1>🎸 乐队数据库系统</h1>
+         <div>
+                {% if user %}
+                    <span style="margin-right: 10px;">👤 欢迎, {{ user.name }}</span>
+                    <a href="/logout" role="button" class="secondary outline">退出</a>
+                {% else %}
+                    <a href="/login" role="button">登录</a>
+                {% endif %}
+            </div>
+        </div>
+            <a href="/" role="button" class="outline">返回首页</a>
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="container">
+        <small>Database Design Assignment © 2026</small>
+    </footer>
+</body>
+</html>

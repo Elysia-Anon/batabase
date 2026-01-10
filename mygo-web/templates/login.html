@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<article style="max-width: 400px; margin: 0 auto;">
+    <header><strong>🔐 用户登录</strong></header>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div style="color: red; margin-bottom: 10px;">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label for="username">用户名 / 乐队名</label>
+        <input type="text" id="username" name="username" placeholder="例如: 邦邦人 / MyGO!!!!!">
+        
+        <label for="password">密码</label>
+        <input type="password" id="password" name="password" placeholder="默认: 123">
+        
+        <button type="submit">登录</button>
+    </form>
+    
+    <footer>
+        <small>测试账号: 邦邦人 / 123</small>
+    </footer>
+</article>
+{% endblock %}
