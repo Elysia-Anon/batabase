@@ -1,33 +1,67 @@
 
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MyGO & Ave Mujica 数据库</title>
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
-
     <style>
-        :root { --primary: #3949ab; }
-        body { padding-top: 20px; }
-        .band-card { transition: transform 0.2s; }
-        .band-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 100, 255, 0.25) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(200, 20, 60, 0.25) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+        article, .band-card, nav, footer, .glass-panel {
+            background: rgba(30, 41, 59, 0.65) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            color: #fff;
+        }
+        .band-card { transition: all 0.3s ease; }
+        .band-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 40px rgba(56, 100, 255, 0.15);
+            border-color: rgba(56, 100, 255, 0.4);
+        }
+        h1, h2, h3, h4, h5, h6 { color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        small { color: #94a3b8; }
+        a { color: #60a5fa; text-decoration: none; }
+        a:hover { color: #93c5fd; text-decoration: underline; }
+        nav a.contrast { color: #fff !important; }
+        nav ul li a { color: #cbd5e1; }
+        nav ul li a:hover { color: #fff; }
+        .flash-message {
+            background-color: rgba(220, 38, 38, 0.2) !important;
+            border-color: rgba(220, 38, 38, 0.5);
+            color: #fca5a5;
+        }
     </style>
 </head>
 <body>
     <nav class="container-fluid">
         <ul>
-            <li><a href="/" class="contrast" style="font-weight: 800; font-size: 1.2rem;">🎸 乐队数据库</a></li>
+            <li>
+                <a href="/" class="contrast" style="font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">🎸</span> 
+                    MyGO & Ave Mujica 数据库
+                </a>
+            </li>
         </ul>
         <ul>
             {% if user %}
-                <li>Hello, <strong>{{ user.name }}</strong></li>
-                <li><a href="/logout" role="button" class="secondary outline">退出</a></li>
+                <li><span style="opacity: 0.8; font-size: 0.9rem;">👤 {{ user.name }}</span></li>
+                <li><a href="/logout" role="button" class="secondary outline" style="font-size: 0.8rem;">退出</a></li>
             {% else %}
-                <li><a href="/login" role="button">登录</a></li>
+                <li><a href="/login" role="button" class="outline">登录</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -35,17 +69,15 @@
     <main class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <article style="background-color: #ffe6e6; color: #d32f2f; border-color: #d32f2f;">
-                    {{ messages[0] }}
-                </article>
+                <article class="flash-message">⚠️ {{ messages[0] }}</article>
             {% endif %}
         {% endwith %}
 
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="container" style="text-align: center; margin-top: 50px; opacity: 0.6;">
-        <small>Database Project © 2026 • Powered by Flask & TiDB</small>
+    <footer class="container" style="text-align: center; margin-top: 60px; padding: 20px; font-size: 0.8rem; border: none; background: transparent !important; box-shadow: none;">
+        <p style="opacity: 0.5;">Database Project © 2026 • Powered by <strong>TiDB Serverless</strong> & <strong>Flask</strong></p>
     </footer>
 </body>
 </html>
