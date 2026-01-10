@@ -9,7 +9,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎸</text></svg>">
 
     <style>
-        
+       
         body {
             background-color: #0f172a; 
             background-image: 
@@ -20,7 +20,7 @@
             color: #e2e8f0;
         }
 
-        
+      
         article, .band-card, nav, footer {
             background: rgba(30, 41, 59, 0.65) !important;
             backdrop-filter: blur(12px);
@@ -31,6 +31,7 @@
             color: #fff;
         }
 
+        
         
         
         .brand-link {
@@ -54,7 +55,7 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-       
+   
         .user-name-text {
             font-size: 0.9rem;
             max-width: 100px;
@@ -72,18 +73,18 @@
             white-space: nowrap;
         }
 
-       
+        
         @media (max-width: 600px) {
             
             .brand-link {
-                font-size: 0.85rem !important;
+                font-size: 0.85rem !important; 
                 gap: 4px;
             }
             .brand-icon {
                 font-size: 1rem !important; 
             }
 
-         
+            
             .user-profile-box {
                 padding: 2px 6px;
                 background: rgba(255, 255, 255, 0.05);
@@ -96,14 +97,15 @@
                 font-size: 0.75rem;
             }
             
-            
+          
             nav.container-fluid {
                 padding-left: 10px;
                 padding-right: 10px;
             }
         }
 
-                .band-card { transition: all 0.3s ease; }
+        
+        .band-card { transition: all 0.3s ease; }
         .band-card:hover { 
             transform: translateY(-6px); 
             box-shadow: 0 15px 40px rgba(56, 100, 255, 0.15); 
@@ -133,3 +135,35 @@
             </li>
         </ul>
         
+        <ul>
+            {% if user %}
+                <li style="padding: 0;">
+                    <div class="user-profile-box">
+                        <span style="font-size: 1.1rem;">👤</span>
+                        <span class="user-name-text">{{ user.name }}</span>
+                    </div>
+                </li>
+                <li style="padding-left: 8px;">
+                    <a href="/logout" class="logout-link">退出</a>
+                </li>
+            {% else %}
+                <li><a href="/login" role="button" class="outline small-btn" style="padding: 6px 15px; font-size: 0.9rem;">登录</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <article class="flash-message">⚠️ {{ messages[0] }}</article>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container" style="text-align: center; margin-top: 60px; padding: 20px; font-size: 0.8rem; border: none; background: transparent !important; box-shadow: none;">
+        <p style="opacity: 0.5;">Database Project © 2026 • Powered by <strong>TiDB Serverless</strong> & <strong>Flask</strong></p>
+    </footer>
+</body>
+</html>
