@@ -196,34 +196,3 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 
-@app.route('/add_review', methods=['POST'])
-def add_review():
-    
-    user = session.get('user')
-    if not user:
-        return redirect('/login')
-    
-   
-    fan_id = user['id']  
-    album_id = request.form.get('album_id') 
-    score = request.form.get('score')
-    comment = request.form.get('comment')
-    
-    
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cursor:
-            sql = """
-                INSERT INTO Review (fan_id, album_id, score, comment) 
-                VALUES (%s, %s, %s, %s)
-            """
-            cursor.execute(sql, (fan_id, album_id, score, comment))
-        conn.commit()
-    except Exception as e:
-        print(f"Error: {e}")
-        conn.rollback()
-    finally:
-        conn.close()
-        
-   
-    return redirect(request.referrer or '/')
