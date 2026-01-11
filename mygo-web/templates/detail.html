@@ -1,9 +1,9 @@
+
 {% extends 'layout.html' %}
 
 {% block content %}
 
 <style>
-   
     .stats-grid-mobile {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
@@ -13,9 +13,8 @@
     .stats-grid-mobile h3 { font-size: 1.5rem !important; margin-bottom: 5px; }
     .stats-grid-mobile small { font-size: 0.8rem; }
 
-   
     .role-badge, mark {
-        white-space: nowrap !important; 
+        white-space: nowrap !important;
         font-size: 0.75rem;
         padding: 4px 8px;
         border-radius: 4px;
@@ -23,23 +22,15 @@
         font-weight: bold;
     }
     
-    
     .role-badge { background-color: #f1c40f; color: #000; }
-    
     
     .date-cell {
         white-space: nowrap !important;
     }
 
-    
     @media (max-width: 600px) {
-        
         .hide-on-mobile { display: none !important; }
-        
-        
         table { font-size: 0.85rem; }
-        
-        
         td, th { padding: 8px 4px !important; }
     }
 </style>
@@ -201,17 +192,26 @@
     <article>
         <header><strong>📝 发表乐评</strong></header>
         <form action="/add_review" method="POST">
-            <input type="hidden" name="album_id" value="1"> 
             <div class="grid">
+                <label>
+                    选择专辑
+                    <select name="album_id" required>
+                        {% for album in albums %}
+                        <option value="{{ album.album_id }}">{{ album.title }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
                 <label>
                     评分 (0-10)
                     <input type="number" name="score" min="0" max="10" step="0.1" required placeholder="10.0">
                 </label>
-                <label>
-                    评论内容
-                    <input type="text" name="comment" placeholder="神专！吹爆！" required>
-                </label>
             </div>
+            
+            <label>
+                评论内容
+                <input type="text" name="comment" placeholder="说说你的看法..." required>
+            </label>
+
             <button type="submit">提交评价</button>
         </form>
     </article>
