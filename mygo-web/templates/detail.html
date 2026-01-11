@@ -1,9 +1,9 @@
-
 {% extends 'layout.html' %}
 
 {% block content %}
 
 <style>
+   
     .stats-grid-mobile {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
@@ -13,20 +13,34 @@
     .stats-grid-mobile h3 { font-size: 1.5rem !important; margin-bottom: 5px; }
     .stats-grid-mobile small { font-size: 0.8rem; }
 
-    .role-badge {
-        white-space: nowrap;
+   
+    .role-badge, mark {
+        white-space: nowrap !important; 
         font-size: 0.75rem;
         padding: 4px 8px;
         border-radius: 4px;
         display: inline-block;
-        background-color: #f1c40f;
-        color: #000;
         font-weight: bold;
     }
+    
+    
+    .role-badge { background-color: #f1c40f; color: #000; }
+    
+    
+    .date-cell {
+        white-space: nowrap !important;
+    }
 
+    
     @media (max-width: 600px) {
-        .hide-on-mobile { display: none; }
-        table { font-size: 0.9rem; }
+        
+        .hide-on-mobile { display: none !important; }
+        
+        
+        table { font-size: 0.85rem; }
+        
+        
+        td, th { padding: 8px 4px !important; }
     }
 </style>
 
@@ -44,7 +58,7 @@
 
 {% if stats %}
 <article>
-    <header><strong>📊 粉丝大数据 </strong></header>
+    <header><strong>📊 粉丝大数据</strong></header>
     <div class="grid stats-grid-mobile" style="text-align: center;">
         <div>
             <h3>{{ stats['粉丝总数'] }}</h3>
@@ -81,11 +95,13 @@
         <tbody>
             {% for m in members %}
             <tr>
-                <th scope="row">{{ m.name }}</th>
-                <td><span class="role-badge">{{ m.role }}</span></td>
+                <th scope="row" style="white-space: nowrap;">{{ m.name }}</th>
+                <td>
+                    <span class="role-badge">{{ m.role }}</span>
+                </td>
                 <td class="hide-on-mobile">{{ m.gender }}</td>
                 <td class="hide-on-mobile">{{ m.age }}</td>
-                <td>{{ m.join_date|string|truncate(10, True, '') }}</td>
+                <td class="date-cell">{{ m.join_date|string|truncate(10, True, '') }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -94,7 +110,7 @@
 
 <hr>
 
-<h3>💿 专辑 & 歌曲 </h3>
+<h3>💿 专辑 & 歌曲 (Discography)</h3>
 <div class="grid">
     {% for album in albums %}
     <article style="padding: 0;">
@@ -125,7 +141,6 @@
 
 <hr>
 
-
 <h3>🎫 近期演出 (Live Events)</h3>
 <figure>
     <table role="grid">
@@ -141,13 +156,13 @@
             {% for concert in concerts %}
             <tr>
                 <td><strong>{{ concert.name }}</strong></td>
-                <td>{{ concert.concert_date }}</td>
+                <td class="date-cell">{{ concert.concert_date }}</td>
                 <td class="hide-on-mobile">{{ concert.venue }}</td>
                 <td>
                     {% if concert.status == '已结束' %}
-                        <small style="opacity: 0.6;">🏁 已结束</small>
+                        <small style="opacity: 0.6; white-space: nowrap;">🏁 已结束</small>
                     {% else %}
-                        <mark style="background: #e74c3c; color: white; padding: 2px 6px; font-size: 0.8rem;">🔥 {{ concert.status }}</mark>
+                        <mark style="background: #e74c3c; color: white;">🔥 {{ concert.status }}</mark>
                     {% endif %}
                 </td>
             </tr>
@@ -184,7 +199,7 @@
 
 {% if user and user.type == 'fan' %}
     <article>
-        <header><strong>📝 发表你的乐评</strong></header>
+        <header><strong>📝 发表乐评</strong></header>
         <form action="/add_review" method="POST">
             <input type="hidden" name="album_id" value="1"> 
             <div class="grid">
@@ -194,7 +209,7 @@
                 </label>
                 <label>
                     评论内容
-                    <input type="text" name="comment" placeholder="组一辈子乐队！" required>
+                    <input type="text" name="comment" placeholder="神专！吹爆！" required>
                 </label>
             </div>
             <button type="submit">提交评价</button>
@@ -207,4 +222,3 @@
 {% endif %}
 
 {% endblock %}
-
