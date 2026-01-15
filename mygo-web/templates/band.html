@@ -43,25 +43,25 @@
                 <div class="row g-3">
                     <div class="col-6">
                         <div class="p-3 bg-light rounded-3 text-center h-100">
-                            <div class="text-primary h2 mb-0 fw-bold">{{ stats.total_fans | default(0) }}</div>
+                            <div class="text-primary h2 mb-0 fw-bold">{{ (stats.total_fans or 0) }}</div>
                             <div class="small text-muted">粉丝总数</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-3 bg-light rounded-3 text-center h-100">
-                            <div class="text-info h2 mb-0 fw-bold">{{ stats.avg_age | default(0) | round(1) }}</div>
+                            <div class="text-info h2 mb-0 fw-bold">{{ (stats.avg_age or 0) | round(1) }}</div>
                             <div class="small text-muted">平均年龄</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-3 bg-light rounded-3 text-center h-100">
-                            <div class="text-danger h2 mb-0 fw-bold">{{ stats.female_count | default(0) }}</div>
+                            <div class="text-danger h2 mb-0 fw-bold">{{ (stats.female_count or 0) }}</div>
                             <div class="small text-muted">女性粉丝</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-3 bg-light rounded-3 text-center h-100">
-                            <div class="text-success h2 mb-0 fw-bold">{{ stats.bachelor_count | default(0) }}</div>
+                            <div class="text-success h2 mb-0 fw-bold">{{ (stats.bachelor_count or 0) }}</div>
                             <div class="small text-muted">本科及以上</div>
                         </div>
                     </div>
