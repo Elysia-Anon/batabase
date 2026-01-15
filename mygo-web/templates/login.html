@@ -161,4 +161,17 @@
         
         setTimeout(function() {
             if(role === 'band') {
-                hint.innerHTML = '<i class="bi bi-music-note-beamed me-1"></i> 请输入乐队
+                hint.innerHTML = '<i class="bi bi-music-note-beamed me-1"></i> 请输入乐队全名 (如 MyGO!!!!!)';
+                hint.className = "small text-primary"; // 乐队用蓝色提示
+            } else if(role === 'admin') {
+                hint.innerHTML = '<i class="bi bi-shield-lock me-1"></i> 系统管理员专用通道';
+                hint.className = "small text-danger"; // 管理员用红色提示
+            } else {
+                hint.innerHTML = '<i class="bi bi-person me-1"></i> 请输入注册时的用户名';
+                hint.className = "small text-muted"; // 歌迷用灰色提示
+            }
+            hint.style.opacity = 1;
+        }, 200);
+    }
+</script>
+{% endblock %}
