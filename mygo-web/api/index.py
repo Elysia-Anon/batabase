@@ -249,9 +249,12 @@ def band_dashboard():
                     flash('新专辑发布成功', 'success')
                 
                 elif action == 'add_song':
-                    # [可选] 这里也可以扩展支持录入歌曲链接，目前先只支持歌名
-                    cursor.execute("INSERT INTO Song (title, authors, album_id) VALUES (%s, %s, %s)",
-                                   (request.form.get('title'), request.form.get('authors'), request.form.get('album_id')))
+                    # [修改] 增加接收 netease_url
+                    cursor.execute("INSERT INTO Song (title, authors, album_id, netease_url) VALUES (%s, %s, %s, %s)",
+                                   (request.form.get('title'), 
+                                    request.form.get('authors'), 
+                                    request.form.get('album_id'),
+                                    request.form.get('netease_url'))) # <--- 新增这行
                     flash('新歌录入成功', 'success')
                 
                 elif action == 'add_concert': 

@@ -229,6 +229,9 @@
                     <div class="row g-3">
                         <div class="col-md-4"><input name="title" class="form-control" placeholder="歌名" required></div>
                         <div class="col-md-4"><input name="authors" class="form-control" placeholder="词曲作者"></div>
+                        <div class="col-md-4">
+                        <input name="netease_url" class="form-control" placeholder="网易云链接(可选)">
+                        </div>
                         <div class="col-md-4"><select name="album_id" class="form-select" required>{% for a in my_albums %}<option value="{{ a.album_id }}">{{ a.title }}</option>{% endfor %}</select></div>
                         <div class="col-12 text-end"><button class="btn btn-info text-white px-4">录入</button></div>
                     </div>
