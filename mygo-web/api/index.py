@@ -9,19 +9,21 @@ template_dir = os.path.join(base_dir, '../templates')
 static_dir = os.path.join(base_dir, '../static')
 
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+# 密钥配置
 app.secret_key = os.environ.get('SECRET_KEY', 'mygo_is_eternal_deployment_key')
 
 # ================= 2. 数据库连接 (强制 SSL 修复版) =================
 def get_db_connection():
     """
     建立数据库连接。
-    修复了 Error 1105: 强制使用 SSL 上下文，无论环境变量如何设置。
+    强制使用 SSL 上下文，无论环境变量如何设置，解决 Error 1105。
     """
     # 1. 构建 SSL 配置
     ssl_ca_path = "/etc/ssl/certs/ca-certificates.crt"
     ssl_config = None
 
     if os.path.exists(ssl_ca_path):
+        # 使用系统证书 (Linux/Vercel)
         ssl_config = {"ca": ssl_ca_path}
     else:
         # 本地/无证书环境：创建忽略验证的 SSL 上下文
@@ -44,7 +46,7 @@ def get_db_connection():
             autocommit=False # 关闭自动提交
         )
         
-        # 3. 关闭安全模式
+        # 3. 关闭安全更新模式 (防止 DELETE/UPDATE 报错)
         try:
             with conn.cursor() as cursor:
                 cursor.execute("SET SQL_SAFE_UPDATES = 0")
@@ -169,6 +171,7 @@ def admin_band_detail(band_id):
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM Band WHERE band_id=%s", (band_id,))
             band = cursor.fetchone()
+            # 管理员也直接查表，不查视图
             cursor.execute("SELECT * FROM Member WHERE band_id=%s", (band_id,))
             members = cursor.fetchall()
     finally:
@@ -214,7 +217,7 @@ def admin_delete_member(member_id, band_id):
         conn.close()
     return redirect(url_for('admin_band_detail', band_id=band_id))
 
-# ================= 5. 乐队功能模块 =================
+# ================= 5. 乐队功能模块 (最终修复版) =================
 @app.route('/band', methods=['GET', 'POST'])
 def band_dashboard():
     if session.get('role') != 'band': return redirect(url_for('login'))
@@ -222,13 +225,14 @@ def band_dashboard():
     band_id = session['band_id']
     band_name = session['band_name']
 
-    # 视图映射
+    # 视图映射 (仅用于统计图表)
     view_map = {
         'MyGO!!!!!': ("view_mygo_info", "view_mygo_fan_stats", "view_mygo_song_stats", "view_mygo_concert_stats"),
         'Ave Mujica': ("view_avemujica_info", "view_avemujica_fan_stats", "view_avemujica_song_stats", "view_avemujica_concert_stats")
     }
     has_views = band_name in view_map
 
+    # POST 操作
     if request.method == 'POST':
         action = request.form.get('action')
         try:
@@ -253,26 +257,33 @@ def band_dashboard():
             conn.rollback()
             flash(f'操作失败: {e}', 'danger')
 
+    # GET 页面渲染
     try:
         with conn.cursor() as cursor:
-            # 统计数据
+            # 1. 获取成员 (【重点修复】直接查 Member 表，确保有 member_id)
+            cursor.execute("SELECT * FROM Member WHERE band_id=%s", (band_id,))
+            members = cursor.fetchall()
+
+            # 2. 获取统计数据 (如果有视图)
             if has_views:
-                v_info, v_stats, v_song, v_concert = view_map[band_name]
-                cursor.execute(f"SELECT * FROM {v_info}")
-                members = cursor.fetchall()
+                # 只查统计相关的视图，不查 info 视图了
+                _, v_stats, v_song, v_concert = view_map[band_name]
+                
                 cursor.execute(f"SELECT * FROM {v_stats}")
                 stats = cursor.fetchone()
+                
                 cursor.execute(f"SELECT * FROM {v_song}")
                 song_stats = cursor.fetchall()
+                
                 cursor.execute(f"SELECT * FROM {v_concert}")
                 concert_stats = cursor.fetchall()
             else:
-                cursor.execute("SELECT name, role, gender, join_date FROM Member WHERE band_id=%s", (band_id,))
-                members = cursor.fetchall()
                 stats, song_stats, concert_stats = None, [], []
 
+            # 3. 其他常规数据
             cursor.execute("SELECT intro FROM Band WHERE band_id=%s", (band_id,))
-            current_intro = cursor.fetchone()['intro']
+            res = cursor.fetchone()
+            current_intro = res['intro'] if res else ""
             
             cursor.execute("SELECT * FROM Album WHERE band_id=%s", (band_id,))
             my_albums = cursor.fetchall()
@@ -293,7 +304,7 @@ def band_dashboard():
                            reviews=reviews, my_concerts=my_concerts, 
                            song_stats=song_stats, concert_stats=concert_stats)
 
-# 乐队删除接口
+# 乐队资源删除接口
 @app.route('/band/delete_album/<int:album_id>')
 def delete_album(album_id):
     if session.get('role') != 'band': return redirect(url_for('login'))
@@ -338,7 +349,7 @@ def delete_member(member_id):
     finally: conn.close()
     return redirect(url_for('band_dashboard'))
 
-# ================= 6. 歌迷功能模块 (含 Python 版自动算分) =================
+# ================= 6. 歌迷功能模块 (Python版自动算分) =================
 @app.route('/fan', methods=['GET', 'POST'])
 def fan_dashboard():
     if session.get('role') != 'fan': return redirect(url_for('login'))
@@ -354,7 +365,7 @@ def fan_dashboard():
                     score = request.form.get('score')
                     comment = request.form.get('comment')
                     
-                    # 1. 插入或更新评论
+                    # 1. 插入评论
                     sql = """
                         INSERT INTO Review (fan_id, album_id, score, comment, review_time) 
                         VALUES (%s, %s, %s, %s, NOW()) 
@@ -363,7 +374,7 @@ def fan_dashboard():
                     """
                     cursor.execute(sql, (fan_id, album_id, score, comment))
 
-                    # 2. [新增] 纯 Python 实现的“触发器”逻辑：更新平均分
+                    # 2. [手动更新] 计算平均分并写入 Album 表 (替代 Trigger)
                     update_avg_sql = """
                         UPDATE Album 
                         SET avg_score = (SELECT AVG(score) FROM Review WHERE album_id = %s) 
@@ -387,7 +398,7 @@ def fan_dashboard():
             cursor.execute("SELECT * FROM Fan WHERE fan_id=%s", (fan_id,))
             my_profile = cursor.fetchone()
             
-            # 排行榜直接查 Album 表（因为我们已经把分算进去了）
+            # 排行榜
             cursor.execute("SELECT * FROM Album ORDER BY avg_score DESC LIMIT 10")
             ranks = cursor.fetchall()
             
