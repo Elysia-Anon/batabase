@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import pymysql
 import os
@@ -9,50 +8,65 @@ import ssl  # 必须引入 ssl 模块以支持 TiDB Cloud
 base_dir = os.path.dirname(os.path.abspath(__file__))
 # 模板目录在上一级的 templates 文件夹
 template_dir = os.path.join(base_dir, '../templates')
+# 静态文件目录 (存放吉他图标)
+static_dir = os.path.join(base_dir, '../static')
 
-app = Flask(__name__, template_folder=template_dir)
-# 从环境变量获取密钥，如果没有则使用默认值（本地调试用）
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+
+# 从环境变量获取密钥，如果没有则使用默认值
 app.secret_key = os.environ.get('SECRET_KEY', 'mygo_is_eternal_deployment_key')
 
-# ================= 2. 数据库连接 (适配 TiDB) =================
+# ================= 2. 数据库连接 (强制 SSL 修复版) =================
 def get_db_connection():
-    # --- SSL 配置 (TiDB Cloud 必需) ---
-    # 尝试自动定位系统 CA 证书 (适用于 Vercel/Render/Linux)
+    """
+    建立数据库连接。
+    修复了 Error 1105: 强制使用 SSL 上下文，无论环境变量如何设置。
+    """
+    
+    # --- 1. 构建 SSL 配置 ---
+    # 尝试寻找系统默认的 CA 证书 (Linux/Vercel 环境通常在这里)
     ssl_ca_path = "/etc/ssl/certs/ca-certificates.crt"
     ssl_config = None
-    
-    # 如果环境变量强制开启 SSL (建议生产环境开启)
-    if os.environ.get('DB_USE_SSL') == 'true':
-        if os.path.exists(ssl_ca_path):
-            ssl_config = {"ca": ssl_ca_path}
-        else:
-            # 如果找不到证书文件（如本地 Windows），创建一个不验证主机名的 SSL 上下文
-            # 这样既能连接 TiDB，又不会因为缺证书报错
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            ssl_config = ctx
 
+    if os.path.exists(ssl_ca_path):
+        # 如果能在系统里找到证书，使用系统证书 (最安全)
+        ssl_config = {"ca": ssl_ca_path}
+    else:
+        # 如果找不到证书 (如本地 Windows 或某些容器)，创建一个忽略主机名验证的 SSL 上下文
+        # 这样既能满足 TiDB 的 SSL 强制要求，又不会因为缺文件而报错
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ssl_config = ctx
+
+    # --- 2. 建立连接 ---
     try:
         conn = pymysql.connect(
-            host=os.environ.get('DB_HOST', 'localhost'),
-            port=int(os.environ.get('DB_PORT', 4000)),  # TiDB 默认 4000
-            user=os.environ.get('DB_USER', 'root'),
-            password=os.environ.get('DB_PASSWORD', ''),
+            host=os.environ.get('DB_HOST'),
+            port=int(os.environ.get('DB_PORT', 4000)), # 默认为 4000
+            user=os.environ.get('DB_USER'),
+            password=os.environ.get('DB_PASSWORD'),
             database=os.environ.get('DB_NAME', 'mygo_db'),
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor,
-            ssl=ssl_config,  # 注入 SSL 配置
-            autocommit=False # 关闭自动提交，手动控制事务
+            ssl=ssl_config,  # [关键修复] 强制传入 SSL 配置
+            autocommit=False # 关闭自动提交，手动管理事务
         )
         
-        # 确保关闭安全更新模式，防止 UPDATE/DELETE 报错
-        with conn.cursor() as cursor:
-            cursor.execute("SET SQL_SAFE_UPDATES = 0")
+        # --- 3. 环境设置 ---
+        # 关闭安全更新模式，防止 UPDATE/DELETE 报错
+        # 同时也为了让触发器能顺利执行
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SET SQL_SAFE_UPDATES = 0")
+        except Exception:
+            pass # 如果这步出错（极少见），不影响主连接
             
         return conn
+
     except Exception as e:
         print(f"❌ Database Connection Failed: {e}")
+        # 在控制台打印详细错误，方便 Vercel Logs 查看
         return None
 
 # ================= 3. 登录与注销 =================
@@ -65,14 +79,14 @@ def login():
         
         conn = get_db_connection()
         if not conn:
-            flash('无法连接到数据库，请检查网络或配置', 'danger')
+            flash('无法连接到数据库，请检查网络或配置 (Error 500)', 'danger')
             return render_template('login.html')
 
         try:
             with conn.cursor() as cursor:
                 # --- A. 管理员登录 ---
                 if role == 'admin':
-                    # 生产环境建议将管理员密码设在环境变量 ADMIN_PASSWORD 中
+                    # 默认密码 'admin'，生产环境建议配置环境变量
                     admin_pwd = os.environ.get('ADMIN_PASSWORD', 'admin')
                     if username == 'admin' and password == admin_pwd:
                         session['role'] = 'admin'
@@ -104,6 +118,8 @@ def login():
                         return redirect(url_for('fan_dashboard'))
                     else:
                         flash('账号不存在或密码错误', 'danger')
+        except Exception as e:
+            flash(f"登录过程发生错误: {e}", 'danger')
         finally:
             conn.close()
 
@@ -120,7 +136,7 @@ def admin_dashboard():
     if session.get('role') != 'admin': return redirect(url_for('login'))
     
     conn = get_db_connection()
-    if not conn: return "DB Error", 500
+    if not conn: return "DB Connection Error", 500
     
     # POST: 添加乐队或歌迷
     if request.method == 'POST':
@@ -245,12 +261,13 @@ def band_dashboard():
     if session.get('role') != 'band': return redirect(url_for('login'))
     
     conn = get_db_connection()
-    if not conn: return "DB Error", 500
+    if not conn: return "DB Connection Error", 500
 
     band_name = session['band_name']
     band_id = session['band_id']
     
     # 视图判断逻辑：兼容新乐队
+    # 如果乐队名是这两者之一，尝试读取视图；否则直接读 Member 表
     if band_name == 'MyGO!!!!!':
         view_info, view_stats = "view_mygo_info", "view_mygo_fan_stats"
         view_song_stats, view_concert_stats = "view_mygo_song_stats", "view_mygo_concert_stats"
@@ -303,6 +320,7 @@ def band_dashboard():
     # GET: 页面数据渲染
     try:
         with conn.cursor() as cursor:
+            # 1. 成员与统计
             if has_views:
                 cursor.execute(f"SELECT * FROM {view_info}")
                 members = cursor.fetchall()
@@ -319,10 +337,12 @@ def band_dashboard():
                 song_stats = []
                 concert_stats = []
 
+            # 2. 简介
             cursor.execute("SELECT intro FROM Band WHERE band_id=%s", (band_id,))
             res = cursor.fetchone()
             current_intro = res['intro'] if res else ""
             
+            # 3. 专辑与歌曲
             cursor.execute("SELECT * FROM Album WHERE band_id=%s", (band_id,))
             my_albums = cursor.fetchall()
             
@@ -333,6 +353,7 @@ def band_dashboard():
             """, (band_id,))
             my_songs = cursor.fetchall()
             
+            # 4. 乐评
             cursor.execute("""
                 SELECT r.score, r.comment, r.review_time, a.title as album_title, f.name as fan_name 
                 FROM Review r 
@@ -342,6 +363,7 @@ def band_dashboard():
             """, (band_id,))
             reviews = cursor.fetchall()
 
+            # 5. 演唱会
             cursor.execute("SELECT * FROM Concert WHERE band_id=%s ORDER BY hold_time DESC", (band_id,))
             my_concerts = cursor.fetchall()
     finally:
@@ -375,7 +397,6 @@ def delete_song(song_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # 只能删除自己乐队的歌
             cursor.execute("""
                 DELETE FROM Song WHERE song_id=%s 
                 AND album_id IN (SELECT album_id FROM Album WHERE band_id=%s)
@@ -427,7 +448,7 @@ def fan_dashboard():
     if session.get('role') != 'fan': return redirect(url_for('login'))
     
     conn = get_db_connection()
-    if not conn: return "DB Error", 500
+    if not conn: return "DB Connection Error", 500
     fan_id = session['fan_id']
 
     # POST: 歌迷操作 (打分/改资料)
@@ -441,9 +462,10 @@ def fan_dashboard():
                     comment = request.form.get('comment')
                     
                     # 使用 ON DUPLICATE KEY UPDATE 解决重复评论问题
+                    # 并更新评论时间为最新
                     sql = """
-                        INSERT INTO Review (fan_id, album_id, score, comment) 
-                        VALUES (%s, %s, %s, %s) 
+                        INSERT INTO Review (fan_id, album_id, score, comment, review_time) 
+                        VALUES (%s, %s, %s, %s, NOW()) 
                         ON DUPLICATE KEY UPDATE 
                         score = VALUES(score), 
                         comment = VALUES(comment), 
@@ -533,6 +555,6 @@ def toggle_like(type, id):
         
     return redirect(url_for('fan_dashboard'))
 
-# 启动入口 (Vercel 需要这个 app 实例)
+# Vercel 需要这个入口，本地运行也需要
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get('PORT', 5000)))
