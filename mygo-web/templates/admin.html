@@ -4,21 +4,21 @@
 <div class="d-flex justify-content-between align-items-end mb-4 px-1">
     <div>
         <h6 class="text-uppercase text-secondary fw-bold small mb-1">System Dashboard</h6>
-        <h2 class="fw-bold text-dark">系统管理员控制台</h2>
+        <h2 class="fw-bold text-dark">管理员控制台</h2>
     </div>
     <div class="d-flex gap-2">
-        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addBandModal">
+        <button class="btn btn-primary rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addBandModal">
             <i class="bi bi-plus-lg me-1"></i> 新建乐队
         </button>
-        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addFanModal">
+        <button class="btn btn-success rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addFanModal">
             <i class="bi bi-person-plus-fill me-1"></i> 添加歌迷
         </button>
     </div>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white pt-4 pb-3">
-        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-hdd-stack me-2"></i> 乐队信息数据库</h5>
+    <div class="card-header bg-white pt-4 pb-3 border-0">
+        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-hdd-stack me-2"></i> 乐队数据库</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -36,16 +36,20 @@
                     {% for b in bands %}
                     <tr>
                         <td class="ps-4 fw-bold text-muted">#{{ b.band_id }}</td>
-                        <td class="fw-bold">{{ b.name }}</td>
+                        <td class="fw-bold text-dark">{{ b.name }}</td>
                         <td><span class="badge bg-light text-dark border">{{ b.leader_name }}</span></td>
                         <td class="font-monospace text-muted small">{{ b.founding_date }}</td>
                         <td class="text-end pe-4">
-                            <a href="{{ url_for('admin_band_detail', band_id=b.band_id) }}" class="btn btn-sm btn-outline-primary me-1">
-                                <i class="bi bi-people-fill"></i> 成员
+                            <a href="{{ url_for('admin_band_detail', band_id=b.band_id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1">
+                                成员管理
                             </a>
-                            <a href="{{ url_for('admin_delete_band', band_id=b.band_id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定删除该乐队？')">删除</a>
+                            <a href="{{ url_for('admin_delete_band', band_id=b.band_id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('警告：删除乐队将清空其所有专辑、歌曲和演唱会数据！确定吗？')">
+                                删除
+                            </a>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">暂无乐队数据</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -54,7 +58,7 @@
 </div>
 
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white pt-4 pb-3">
+    <div class="card-header bg-white pt-4 pb-3 border-0">
         <h5 class="mb-0 fw-bold text-success"><i class="bi bi-people me-2"></i> 注册歌迷档案</h5>
     </div>
     <div class="card-body p-0">
@@ -75,9 +79,13 @@
                         <td class="fw-bold">{{ f.name }}</td>
                         <td>{{ f.age }} 岁</td>
                         <td class="text-end pe-4">
-                            <a href="{{ url_for('admin_delete_fan', fan_id=f.fan_id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定注销该用户？')">注销</a>
+                            <a href="{{ url_for('admin_delete_fan', fan_id=f.fan_id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('确定注销该用户？')">
+                                注销
+                            </a>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">暂无歌迷数据</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -86,42 +94,50 @@
 </div>
 
 <div class="modal fade" id="addBandModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
             <form method="POST">
                 <input type="hidden" name="action" value="add_band">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">新建乐队</h5>
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title fw-bold">新建乐队</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3"><label>乐队名称</label><input type="text" name="name" class="form-control" required></div>
-                    <div class="mb-3"><label>登录密码</label><input type="text" name="password" class="form-control" value="123456" required></div>
-                    <div class="mb-3"><label>队长姓名</label><input type="text" name="leader" class="form-control"></div>
-                    <div class="mb-3"><label>成立日期</label><input type="date" name="date" class="form-control"></div>
-                    <div class="mb-3"><label>简介</label><textarea name="intro" class="form-control"></textarea></div>
+                <div class="modal-body p-4">
+                    <div class="mb-3"><label class="small fw-bold text-muted">乐队名称</label><input type="text" name="name" class="form-control" required></div>
+                    <div class="mb-3"><label class="small fw-bold text-muted">登录密码</label><input type="text" name="password" class="form-control" value="123456" required></div>
+                    <div class="row">
+                        <div class="col-6 mb-3"><label class="small fw-bold text-muted">队长姓名</label><input type="text" name="leader" class="form-control"></div>
+                        <div class="col-6 mb-3"><label class="small fw-bold text-muted">成立日期</label><input type="date" name="date" class="form-control"></div>
+                    </div>
+                    <div class="mb-3"><label class="small fw-bold text-muted">简介</label><textarea name="intro" class="form-control" rows="3"></textarea></div>
                 </div>
-                <div class="modal-footer"><button type="submit" class="btn btn-primary">创建</button></div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 w-100">立即创建</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="addFanModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
             <form method="POST">
                 <input type="hidden" name="action" value="add_fan">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">添加歌迷</h5>
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold">添加歌迷</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3"><label>用户名</label><input type="text" name="name" class="form-control" required></div>
-                    <div class="mb-3"><label>密码</label><input type="text" name="password" class="form-control" value="123" required></div>
-                    <div class="mb-3"><label>年龄</label><input type="number" name="age" class="form-control" value="18"></div>
+                <div class="modal-body p-4">
+                    <div class="mb-3"><label class="small fw-bold text-muted">用户名</label><input type="text" name="name" class="form-control" required></div>
+                    <div class="row">
+                        <div class="col-6 mb-3"><label class="small fw-bold text-muted">初始密码</label><input type="text" name="password" class="form-control" value="123" required></div>
+                        <div class="col-6 mb-3"><label class="small fw-bold text-muted">年龄</label><input type="number" name="age" class="form-control" value="18"></div>
+                    </div>
                 </div>
-                <div class="modal-footer"><button type="submit" class="btn btn-success">添加</button></div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-success rounded-pill px-4 w-100">确认添加</button>
+                </div>
             </form>
         </div>
     </div>

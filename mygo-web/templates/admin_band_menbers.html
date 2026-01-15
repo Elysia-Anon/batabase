@@ -3,76 +3,91 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <a href="{{ url_for('admin_dashboard') }}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> 返回控制台</a>
-        <h2 class="fw-bold mt-1">成员管理: {{ band.name }}</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="text-decoration-none text-muted small hover-link">
+            <i class="bi bi-arrow-left"></i> 返回控制台
+        </a>
+        <h2 class="fw-bold mt-1 text-dark">成员管理: <span class="text-primary">{{ band.name }}</span></h2>
     </div>
-    <span class="badge bg-white text-dark border px-3 py-2 fs-6">现役成员: {{ members|length }} 人</span>
+    <span class="badge bg-white text-dark border shadow-sm px-3 py-2 fs-6 rounded-pill">
+        现役成员: {{ members|length }} 人
+    </span>
 </div>
 
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white pt-3 pb-2"><h5 class="mb-0 fw-bold">成员名册</h5></div>
+            <div class="card-header bg-white pt-3 pb-2 border-0">
+                <h5 class="mb-0 fw-bold">成员名册</h5>
+            </div>
             <div class="card-body p-0">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">姓名</th>
-                            <th>担当</th>
-                            <th>性别</th>
-                            <th>加入时间</th>
-                            <th class="text-end pe-4">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for m in members %}
-                        <tr>
-                            <td class="ps-4 fw-bold">{{ m.name }}</td>
-                            <td><span class="badge bg-light text-dark border">{{ m.role }}</span></td>
-                            <td>{{ m.gender }}</td>
-                            <td class="text-muted small">{{ m.join_date }}</td>
-                            <td class="text-end pe-4">
-                                <a href="{{ url_for('admin_delete_member', member_id=m.member_id, band_id=band.band_id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('确定移除该成员？')">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="5" class="text-center py-4 text-muted">暂无成员</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">姓名</th>
+                                <th>担当</th>
+                                <th>性别</th>
+                                <th>加入时间</th>
+                                <th class="text-end pe-4">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in members %}
+                            <tr>
+                                <td class="ps-4 fw-bold">{{ m.name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ m.role }}</span></td>
+                                <td>{{ m.gender }}</td>
+                                <td class="text-muted small">{{ m.join_date }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{{ url_for('admin_delete_member', member_id=m.member_id, band_id=band.band_id) }}" 
+                                       class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                       onclick="return confirm('确定移除该成员？')"
+                                       title="移除">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-5 text-muted">该乐队暂无成员</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary text-white"><h5 class="mb-0 fw-bold">录入新成员</h5></div>
+            <div class="card-header bg-primary text-white border-0 py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill me-2"></i>录入新成员</h5>
+            </div>
             <div class="card-body p-4">
                 <form method="POST">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">姓名</label>
-                        <input type="text" name="name" class="form-control" required>
+                        <label class="small fw-bold text-muted">姓名</label>
+                        <input type="text" name="name" class="form-control" placeholder="输入成员姓名" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">担当</label>
-                        <input type="text" name="role" class="form-control" required>
+                        <label class="small fw-bold text-muted">担当 (Role)</label>
+                        <input type="text" name="role" class="form-control" placeholder="例如：主唱 / 吉他手" required>
                     </div>
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-muted">性别</label>
+                            <label class="small fw-bold text-muted">性别</label>
                             <select name="gender" class="form-select">
                                 <option value="女">女</option>
                                 <option value="男">男</option>
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-muted">加入日期</label>
+                            <label class="small fw-bold text-muted">加入日期</label>
                             <input type="date" name="join_date" class="form-control" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">确认添加</button>
+                    <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold py-2">
+                        确认添加
+                    </button>
                 </form>
             </div>
         </div>

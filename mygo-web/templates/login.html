@@ -1,60 +1,164 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5 col-lg-4">
-        <div class="card shadow-lg border-0">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary">欢迎登录</h3>
-                    <p class="text-muted small">MyGO 乐队数据库管理系统</p>
-                </div>
+<style>
+    /* ================= Apple 风格自定义 CSS ================= */
+    
+    /* 1. 背景：Apple 经典的浅灰色背景，让白色卡片浮起来 */
+    body {
+        background-color: #f5f5f7 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
 
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">选择身份</label>
-                        <select name="role" class="form-select" id="roleSelect" onchange="toggleHint()">
-                            <option value="fan">🎤 歌迷 (Fan)</option>
-                            <option value="band">🎸 乐队 (Band)</option>
-                            <option value="admin">🔧 管理员 (Admin)</option>
-                        </select>
-                    </div>
+    /* 2. 登录卡片：去边框、大圆角、极致柔和的扩散阴影 */
+    .apple-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 20px; /* 更大的圆角 */
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); /* 高级感阴影 */
+        padding: 48px 40px;
+        max-width: 400px;
+        width: 100%;
+        margin: 0 auto;
+        /* 入场动画 */
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">账号 / 乐队名</label>
-                        <input type="text" name="username" class="form-control" placeholder="请输入用户名" required>
-                    </div>
+    /* 3. 输入框：大内边距、隐藏默认边框、聚焦时发出柔和蓝光 */
+    .form-control, .form-select {
+        background-color: #ffffff;
+        border: 1px solid #d2d2d7; /* 浅灰边框 */
+        border-radius: 12px;
+        padding: 14px 16px;       /* 更高大的输入框 */
+        font-size: 17px;          /* 黄金字号 */
+        margin-bottom: 20px;
+        box-shadow: none;
+        transition: all 0.2s ease;
+    }
 
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-muted">密码</label>
-                        <input type="password" name="password" class="form-control" placeholder="请输入密码" required>
-                    </div>
+    .form-control:focus, .form-select:focus {
+        border-color: #0071e3;    /* Apple Blue */
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12); /* 蓝色光晕 */
+    }
 
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">登 录</button>
-                </form>
+    /* 4. 按钮：经典的蓝色胶囊按钮 */
+    .btn-apple {
+        background-color: #0071e3;
+        border: none;
+        border-radius: 980px; /* 完全圆润的胶囊形 */
+        padding: 12px 24px;
+        font-size: 17px;
+        font-weight: 500;
+        width: 100%;
+        color: white;
+        transition: transform 0.1s, background-color 0.2s;
+        margin-top: 10px;
+    }
 
-                <div class="mt-4 text-center">
-                    <small class="text-muted" id="loginHint">
-                        <i class="bi bi-info-circle me-1"></i> 歌迷请直接输入注册时的用户名
-                    </small>
-                </div>
+    .btn-apple:hover {
+        background-color: #0077ed; /* 悬停变亮 */
+        color: white;
+    }
+
+    .btn-apple:active {
+        transform: scale(0.98); /* 点击微缩反馈 */
+    }
+
+    /* 5. 文字排版 */
+    .apple-title {
+        font-weight: 700;
+        font-size: 28px;
+        color: #1d1d1f;
+        letter-spacing: -0.01em;
+        margin-bottom: 8px;
+    }
+
+    .apple-subtitle {
+        font-size: 15px;
+        color: #86868b; /* 高级灰 */
+        margin-bottom: 32px;
+    }
+
+    /* 隐藏丑陋的标签，用 placeholder 代替 */
+    .form-label {
+        display: none;
+    }
+
+    /* 动画关键帧 */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Logo 动画 */
+    .logo-anim {
+        display: inline-block;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: default;
+    }
+    .logo-anim:hover {
+        transform: rotate(-12deg) scale(1.1);
+    }
+</style>
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    
+    <div class="apple-card text-center">
+        <div class="mb-4">
+            <div class="logo-anim" style="font-size: 64px; line-height: 1;">
+                🎸
             </div>
+        </div>
+
+        <h1 class="apple-title">欢迎登录</h1>
+        <p class="apple-subtitle">MyGO 乐队数据库管理系统</p>
+
+        <form method="POST" class="text-start">
+            
+            <div class="mb-1">
+                <select name="role" class="form-select" id="roleSelect" onchange="toggleHint()" style="cursor: pointer;">
+                    <option value="fan">🎤 歌迷 (Fan)</option>
+                    <option value="band">🎸 乐队 (Band)</option>
+                    <option value="admin">🔧 管理员 (Admin)</option>
+                </select>
+            </div>
+
+            <div class="mb-1">
+                <input type="text" name="username" class="form-control" placeholder="用户名 / 乐队名" required autocomplete="off">
+            </div>
+
+            <div class="mb-4">
+                <input type="password" name="password" class="form-control" placeholder="密码" required>
+            </div>
+
+            <button type="submit" class="btn btn-apple">
+                登 录
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 text-center">
+            <span class="small text-muted" id="loginHint" style="font-size: 13px; transition: color 0.3s;">
+                <i class="bi bi-person me-1"></i> 请输入注册时的用户名
+            </span>
+        </div>
+        
+        <div class="mt-3">
+            <a href="/" class="text-decoration-none small" style="color: #0071e3; font-size: 13px;">
+                遇到问题？ <i class="bi bi-arrow-right-short"></i>
+            </a>
         </div>
     </div>
 </div>
 
 <script>
+    // 动态切换提示语的脚本
     function toggleHint() {
         var role = document.getElementById("roleSelect").value;
         var hint = document.getElementById("loginHint");
-        if(role === 'band') {
-            hint.innerHTML = '<i class="bi bi-music-note-beamed me-1"></i> 请输入乐队全名 (如 MyGO!!!!!)';
-        } else if(role === 'admin') {
-            hint.innerHTML = '<i class="bi bi-shield-lock me-1"></i> 系统管理员专用通道';
-        } else {
-            hint.innerHTML = '<i class="bi bi-person me-1"></i> 歌迷请直接输入注册时的用户名';
-        }
-    }
-</script>
-{% endblock %}
+        
+        // 使用淡入淡出效果切换文字
+        hint.style.opacity = 0;
+        
+        setTimeout(function() {
+            if(role === 'band') {
+                hint.innerHTML = '<i class="bi bi-music-note-beamed me-1"></i> 请输入乐队
