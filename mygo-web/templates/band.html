@@ -7,10 +7,18 @@
         <div class="d-flex justify-content-between align-items-start">
             <div>
                 <span class="badge bg-dark rounded-pill mb-2 px-3">乐队管理后台</span>
-                <h1 class="fw-bold display-5 mb-0">{{ band_name }}</h1>
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="fw-bold display-5 mb-0">{{ band_name }}</h1>
+                    
+                    {% if netease_url %}
+                    <a href="{{ netease_url }}" target="_blank" class="btn btn-danger rounded-pill px-3 shadow-sm border-0" style="background-color: #d32f2f;">
+                        <i class="bi bi-headphones me-1"></i> 主页
+                    </a>
+                    {% endif %}
+                </div>
             </div>
             <button class="btn btn-outline-dark rounded-pill px-4" type="button" data-bs-toggle="collapse" data-bs-target="#editIntro">
-                <i class="bi bi-pencil-square me-1"></i> 修改简介
+                <i class="bi bi-pencil-square me-1"></i> 修改资料
             </button>
         </div>
         
@@ -18,8 +26,21 @@
             <div class="bg-light p-4 rounded-4">
                 <form method="POST">
                     <input type="hidden" name="action" value="update_intro">
-                    <label class="small fw-bold text-muted mb-2">乐队简介内容</label>
-                    <textarea name="intro" class="form-control bg-white mb-3 shadow-sm" rows="4">{{ intro }}</textarea>
+                    
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-2">乐队简介</label>
+                        <textarea name="intro" class="form-control bg-white shadow-sm" rows="4">{{ intro }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-2">
+                            <i class="bi bi-music-note-beamed text-danger"></i> 网易云音乐主页链接
+                        </label>
+                        <input type="text" name="netease_url" class="form-control bg-white shadow-sm" 
+                               value="{{ netease_url }}" 
+                               placeholder="粘贴链接，例如: https://music.163.com/#/artist?id=xxxxx">
+                    </div>
+
                     <div class="text-end"><button class="btn btn-dark px-4">保存修改</button></div>
                 </form>
             </div>
@@ -70,7 +91,6 @@
             
             <div class="col-md-6">
                 <h6 class="text-muted text-uppercase small fw-bold mb-3">作品热度排行 (Top 5)</h6>
-                
                 <div class="mb-3">
                     <small class="text-muted d-block mb-1">🔥 热门歌曲 (收藏数)</small>
                     <ul class="list-group">
@@ -84,7 +104,6 @@
                         {% endfor %}
                     </ul>
                 </div>
-
                 <div>
                     <small class="text-muted d-block mb-1">🎫 热门Live (报名数)</small>
                     <ul class="list-group">
@@ -107,10 +126,7 @@
     <i class="bi bi-stars fs-1 text-warning me-4"></i>
     <div>
         <h5 class="fw-bold mb-1">欢迎加入 MyGO Database!</h5>
-        <p class="mb-0 text-muted">
-            您的乐队暂无统计数据。可能是因为暂时还没有粉丝关注您的乐队。
-            <br>请等待粉丝数据更新，或者自己注册一个歌迷账号来测试关注功能。
-        </p>
+        <p class="mb-0 text-muted">您的乐队暂无统计数据，请等待粉丝关注。</p>
     </div>
 </div>
 {% endif %}
@@ -124,11 +140,7 @@
             <table class="table align-middle mb-0 table-hover">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4">姓名</th>
-                        <th>担当</th>
-                        <th>性别</th>
-                        <th>加入时间</th>
-                        <th class="text-end pe-4">操作</th>
+                        <th class="ps-4">姓名</th><th>担当</th><th>性别</th><th>加入时间</th><th class="text-end pe-4">操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -139,15 +151,11 @@
                         <td>{{ m.gender }}</td>
                         <td class="text-muted small">{{ m.join_date }}</td>
                         <td class="text-end pe-4">
-                            <a href="{{ url_for('delete_member', member_id=m.member_id) }}" 
-                               class="btn btn-sm btn-outline-secondary border-0"
-                               onclick="return confirm('确定移除 {{ m.name }} 吗？')">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <a href="{{ url_for('delete_member', member_id=m.member_id) }}" class="btn btn-sm btn-outline-secondary border-0" onclick="return confirm('确定移除 {{ m.name }} 吗？')"><i class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="5" class="text-center text-muted py-4">暂无成员，请联系管理员添加。</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted py-4">暂无成员</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -158,54 +166,33 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white pt-3 pb-2 d-flex justify-content-between align-items-center border-0">
         <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-ticket-perforated-fill me-2"></i> 演唱会行程</h5>
-        <button class="btn btn-sm btn-danger rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#addConcert">
-            <i class="bi bi-plus-lg"></i> 发布预告
-        </button>
+        <button class="btn btn-sm btn-danger rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#addConcert"><i class="bi bi-plus-lg"></i> 发布预告</button>
     </div>
-    
     <div class="card-body">
         <div class="collapse mb-4" id="addConcert">
             <div class="bg-light p-4 rounded-3 border border-danger border-opacity-10">
                 <form method="POST">
                     <input type="hidden" name="action" value="add_concert">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold">演唱会名称</label>
-                            <input name="name" class="form-control" placeholder="例如：1st LIVE" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="small text-muted fw-bold">时间</label>
-                            <input name="hold_time" type="datetime-local" class="form-control" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="small text-muted fw-bold">地点</label>
-                            <input name="location" class="form-control" required>
-                        </div>
-                        <div class="col-12 text-end">
-                            <button class="btn btn-danger px-4">确认发布</button>
-                        </div>
+                        <div class="col-md-6"><label class="small text-muted fw-bold">名称</label><input name="name" class="form-control" required></div>
+                        <div class="col-md-3"><label class="small text-muted fw-bold">时间</label><input name="hold_time" type="datetime-local" class="form-control" required></div>
+                        <div class="col-md-3"><label class="small text-muted fw-bold">地点</label><input name="location" class="form-control" required></div>
+                        <div class="col-12 text-end"><button class="btn btn-danger px-4">发布</button></div>
                     </div>
                 </form>
             </div>
         </div>
-
         <ul class="list-group list-group-flush">
             {% for c in my_concerts %}
             <li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
                 <div>
                     <h6 class="fw-bold mb-1">{{ c.name }}</h6>
-                    <div class="text-muted small">
-                        <i class="bi bi-clock me-1"></i> {{ c.hold_time }} 
-                        <span class="mx-2">|</span> 
-                        <i class="bi bi-geo-alt me-1"></i> {{ c.location }}
-                    </div>
+                    <div class="text-muted small"><i class="bi bi-clock me-1"></i> {{ c.hold_time }} | <i class="bi bi-geo-alt me-1"></i> {{ c.location }}</div>
                 </div>
-                <a href="{{ url_for('delete_concert', concert_id=c.concert_id) }}" class="btn btn-sm btn-light text-muted" onclick="return confirm('确定取消这场演唱会吗？')">
-                    <i class="bi bi-trash"></i>
-                </a>
+                <a href="{{ url_for('delete_concert', concert_id=c.concert_id) }}" class="btn btn-sm btn-light text-muted" onclick="return confirm('确定取消？')"><i class="bi bi-trash"></i></a>
             </li>
             {% else %}
-            <li class="list-group-item text-center py-4 text-muted border-0">暂无行程安排</li>
+            <li class="list-group-item text-center py-4 text-muted border-0">暂无行程</li>
             {% endfor %}
         </ul>
     </div>
@@ -217,32 +204,18 @@
     </div>
     <div class="card-body">
         <div class="d-flex gap-2 mb-4">
-            <button class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addAlbum">
-                <i class="bi bi-plus-circle me-1"></i> 发布专辑
-            </button>
-            <button class="btn btn-outline-info rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addSong">
-                <i class="bi bi-music-note-list me-1"></i> 录入歌曲
-            </button>
+            <button class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addAlbum"><i class="bi bi-plus-circle me-1"></i> 发布专辑</button>
+            <button class="btn btn-outline-info rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addSong"><i class="bi bi-music-note-list me-1"></i> 录入歌曲</button>
         </div>
 
         <div class="collapse mb-3" id="addAlbum">
             <div class="bg-light p-4 rounded-3 border border-primary border-opacity-10">
-                <h6 class="fw-bold mb-3 text-primary">💿 新建专辑</h6>
                 <form method="POST">
                     <input type="hidden" name="action" value="add_album">
                     <div class="row g-3">
-                        <div class="col-md-5">
-                            <label class="small text-muted fw-bold">专辑名称</label>
-                            <input name="title" class="form-control" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="small text-muted fw-bold">发行日期</label>
-                            <input name="release_date" type="date" class="form-control" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted fw-bold">文案</label>
-                            <input name="intro" class="form-control" placeholder="简短介绍...">
-                        </div>
+                        <div class="col-md-5"><input name="title" class="form-control" placeholder="专辑名" required></div>
+                        <div class="col-md-3"><input name="release_date" type="date" class="form-control" required></div>
+                        <div class="col-md-4"><input name="intro" class="form-control" placeholder="文案"></div>
                         <div class="col-12 text-end"><button class="btn btn-primary px-4">发布</button></div>
                     </div>
                 </form>
@@ -251,24 +224,12 @@
 
         <div class="collapse mb-4" id="addSong">
             <div class="bg-light p-4 rounded-3 border border-info border-opacity-10">
-                <h6 class="fw-bold mb-3 text-info">🎵 录入单曲</h6>
                 <form method="POST">
                     <input type="hidden" name="action" value="add_song">
                     <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="small text-muted fw-bold">歌曲名</label>
-                            <input name="title" class="form-control" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted fw-bold">词曲作者</label>
-                            <input name="authors" class="form-control" placeholder="词: XX / 曲: XX">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted fw-bold">所属专辑</label>
-                            <select name="album_id" class="form-select" required>
-                                {% for a in my_albums %}<option value="{{ a.album_id }}">{{ a.title }}</option>{% endfor %}
-                            </select>
-                        </div>
+                        <div class="col-md-4"><input name="title" class="form-control" placeholder="歌名" required></div>
+                        <div class="col-md-4"><input name="authors" class="form-control" placeholder="词曲作者"></div>
+                        <div class="col-md-4"><select name="album_id" class="form-select" required>{% for a in my_albums %}<option value="{{ a.album_id }}">{{ a.title }}</option>{% endfor %}</select></div>
                         <div class="col-12 text-end"><button class="btn btn-info text-white px-4">录入</button></div>
                     </div>
                 </form>
@@ -279,42 +240,21 @@
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#list-album">专辑列表</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#list-song">歌曲列表</button></li>
         </ul>
-        
         <div class="tab-content border rounded-bottom p-3 bg-white" style="min-height: 200px;">
             <div class="tab-pane fade show active" id="list-album">
-                <table class="table table-hover align-middle mb-0">
-                    <tbody>
-                        {% for a in my_albums %}
-                        <tr>
-                            <td class="ps-3 fw-bold">{{ a.title }}</td>
-                            <td class="text-muted small">{{ a.release_date }}</td>
-                            <td class="text-end">
-                                <a href="{{ url_for('delete_album', album_id=a.album_id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('删除专辑将连带删除所有歌曲，确定吗？')">删除</a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="3" class="text-center text-muted py-4">暂无专辑</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <table class="table table-hover align-middle mb-0"><tbody>
+                    {% for a in my_albums %}
+                    <tr><td class="ps-3 fw-bold">{{ a.title }}</td><td class="text-muted small">{{ a.release_date }}</td><td class="text-end"><a href="{{ url_for('delete_album', album_id=a.album_id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('确定删除？')">删除</a></td></tr>
+                    {% else %}<tr><td colspan="3" class="text-center text-muted py-4">暂无专辑</td></tr>{% endfor %}
+                </tbody></table>
             </div>
             <div class="tab-pane fade" id="list-song">
                 <div style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover align-middle mb-0">
-                        <tbody>
-                            {% for s in my_songs %}
-                            <tr>
-                                <td class="ps-3 fw-bold">{{ s.title }}</td>
-                                <td class="text-muted small">{{ s.album_title }}</td>
-                                <td class="text-end">
-                                    <a href="{{ url_for('delete_song', song_id=s.song_id) }}" class="btn btn-sm btn-outline-secondary border-0" onclick="return confirm('确认删除歌曲？')">删除</a>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr><td colspan="3" class="text-center text-muted py-4">暂无歌曲</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <table class="table table-hover align-middle mb-0"><tbody>
+                        {% for s in my_songs %}
+                        <tr><td class="ps-3 fw-bold">{{ s.title }}</td><td class="text-muted small">{{ s.album_title }}</td><td class="text-end"><a href="{{ url_for('delete_song', song_id=s.song_id) }}" class="btn btn-sm btn-outline-secondary border-0" onclick="return confirm('确定删除？')">删除</a></td></tr>
+                        {% else %}<tr><td colspan="3" class="text-center text-muted py-4">暂无歌曲</td></tr>{% endfor %}
+                    </tbody></table>
                 </div>
             </div>
         </div>
@@ -322,32 +262,16 @@
 </div>
 
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white pt-3 pb-2 border-0">
-        <h5 class="fw-bold mb-0 text-warning"><i class="bi bi-chat-square-quote-fill me-2"></i> 最新乐评</h5>
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            {% for r in reviews %}
-            <div class="col-md-6">
-                <div class="bg-light p-3 rounded-3 h-100">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="fw-bold text-dark">{{ r.fan_name }}</span>
-                        <span class="badge bg-warning text-dark">{{ r.score }} 分</span>
-                    </div>
-                    <p class="mb-2 small fst-italic text-secondary">"{{ r.comment }}"</p>
-                    <div class="text-muted small d-flex justify-content-between">
-                        <span><i class="bi bi-disc me-1"></i>{{ r.album_title }}</span>
-                        <span>{{ r.review_time }}</span>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12 text-center py-4 text-muted">
-                暂无乐评，快去邀请粉丝打分吧！
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    <div class="card-header bg-white pt-3 pb-2 border-0"><h5 class="fw-bold mb-0 text-warning"><i class="bi bi-chat-square-quote-fill me-2"></i> 最新乐评</h5></div>
+    <div class="card-body"><div class="row g-3">
+        {% for r in reviews %}
+        <div class="col-md-6"><div class="bg-light p-3 rounded-3 h-100">
+            <div class="d-flex justify-content-between mb-2"><span class="fw-bold text-dark">{{ r.fan_name }}</span><span class="badge bg-warning text-dark">{{ r.score }} 分</span></div>
+            <p class="mb-2 small fst-italic text-secondary">"{{ r.comment }}"</p>
+            <div class="text-muted small d-flex justify-content-between"><span><i class="bi bi-disc me-1"></i>{{ r.album_title }}</span><span>{{ r.review_time }}</span></div>
+        </div></div>
+        {% else %}<div class="col-12 text-center py-4 text-muted">暂无乐评</div>{% endfor %}
+    </div></div>
 </div>
 
 {% endblock %}

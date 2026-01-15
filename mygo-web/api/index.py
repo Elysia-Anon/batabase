@@ -16,7 +16,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'mygo_is_eternal_deployment_key')
 def get_db_connection():
     """
     建立数据库连接。
-    强制使用 SSL 上下文，无论环境变量如何设置，解决 Error 1105。
+    强制使用 SSL 上下文，解决 TiDB Cloud Error 1105。
     """
     # 1. 构建 SSL 配置
     ssl_ca_path = "/etc/ssl/certs/ca-certificates.crt"
@@ -171,7 +171,7 @@ def admin_band_detail(band_id):
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM Band WHERE band_id=%s", (band_id,))
             band = cursor.fetchone()
-            # 管理员也直接查表，不查视图
+            # 直接查 Member 表，确保 member_id 存在
             cursor.execute("SELECT * FROM Member WHERE band_id=%s", (band_id,))
             members = cursor.fetchall()
     finally:
@@ -217,7 +217,7 @@ def admin_delete_member(member_id, band_id):
         conn.close()
     return redirect(url_for('admin_band_detail', band_id=band_id))
 
-# ================= 5. 乐队功能模块 (最终修复版) =================
+# ================= 5. 乐队功能模块 (全功能修复版) =================
 @app.route('/band', methods=['GET', 'POST'])
 def band_dashboard():
     if session.get('role') != 'band': return redirect(url_for('login'))
@@ -238,16 +238,22 @@ def band_dashboard():
         try:
             with conn.cursor() as cursor:
                 if action == 'update_intro':
-                    cursor.execute("UPDATE Band SET intro=%s WHERE band_id=%s", (request.form.get('intro'), band_id))
-                    flash('简介更新成功', 'success')
+                    # [新功能] 同时更新简介和网易云链接
+                    cursor.execute("UPDATE Band SET intro=%s, netease_url=%s WHERE band_id=%s", 
+                                   (request.form.get('intro'), request.form.get('netease_url'), band_id))
+                    flash('简介与链接更新成功', 'success')
+                
                 elif action == 'add_album':
                     cursor.execute("INSERT INTO Album (title, release_date, album_intro, band_id) VALUES (%s, %s, %s, %s)",
                                    (request.form.get('title'), request.form.get('release_date'), request.form.get('intro'), band_id))
                     flash('新专辑发布成功', 'success')
+                
                 elif action == 'add_song':
+                    # [可选] 这里也可以扩展支持录入歌曲链接，目前先只支持歌名
                     cursor.execute("INSERT INTO Song (title, authors, album_id) VALUES (%s, %s, %s)",
                                    (request.form.get('title'), request.form.get('authors'), request.form.get('album_id')))
                     flash('新歌录入成功', 'success')
+                
                 elif action == 'add_concert': 
                     cursor.execute("INSERT INTO Concert (name, hold_time, location, band_id) VALUES (%s, %s, %s, %s)",
                                    (request.form.get('name'), request.form.get('hold_time'), request.form.get('location'), band_id))
@@ -260,37 +266,36 @@ def band_dashboard():
     # GET 页面渲染
     try:
         with conn.cursor() as cursor:
-            # 1. 获取成员 (【重点修复】直接查 Member 表，确保有 member_id)
+            # 1. 获取成员 (直接查 Member 表，解决成员删除报错问题)
             cursor.execute("SELECT * FROM Member WHERE band_id=%s", (band_id,))
             members = cursor.fetchall()
 
             # 2. 获取统计数据 (如果有视图)
             if has_views:
-                # 只查统计相关的视图，不查 info 视图了
                 _, v_stats, v_song, v_concert = view_map[band_name]
-                
                 cursor.execute(f"SELECT * FROM {v_stats}")
                 stats = cursor.fetchone()
-                
                 cursor.execute(f"SELECT * FROM {v_song}")
                 song_stats = cursor.fetchall()
-                
                 cursor.execute(f"SELECT * FROM {v_concert}")
                 concert_stats = cursor.fetchall()
             else:
                 stats, song_stats, concert_stats = None, [], []
 
-            # 3. 其他常规数据
-            cursor.execute("SELECT intro FROM Band WHERE band_id=%s", (band_id,))
+            # 3. 获取乐队基本信息 (包含 netease_url)
+            cursor.execute("SELECT intro, netease_url FROM Band WHERE band_id=%s", (band_id,))
             res = cursor.fetchone()
             current_intro = res['intro'] if res else ""
+            current_url = res['netease_url'] if res else "" # [新功能]
             
+            # 4. 专辑和歌曲列表
             cursor.execute("SELECT * FROM Album WHERE band_id=%s", (band_id,))
             my_albums = cursor.fetchall()
             
             cursor.execute("SELECT s.song_id, s.title, s.authors, a.title as album_title FROM Song s JOIN Album a ON s.album_id = a.album_id WHERE a.band_id = %s", (band_id,))
             my_songs = cursor.fetchall()
             
+            # 5. 乐评和演唱会
             cursor.execute("SELECT r.score, r.comment, r.review_time, a.title as album_title, f.name as fan_name FROM Review r JOIN Album a ON r.album_id = a.album_id JOIN Fan f ON r.fan_id = f.fan_id WHERE a.band_id = %s ORDER BY r.review_time DESC", (band_id,))
             reviews = cursor.fetchall()
 
@@ -300,7 +305,8 @@ def band_dashboard():
         conn.close()
 
     return render_template('band.html', band_name=band_name, members=members, stats=stats, 
-                           intro=current_intro, my_albums=my_albums, my_songs=my_songs, 
+                           intro=current_intro, netease_url=current_url, # 传给模板
+                           my_albums=my_albums, my_songs=my_songs, 
                            reviews=reviews, my_concerts=my_concerts, 
                            song_stats=song_stats, concert_stats=concert_stats)
 
@@ -349,7 +355,7 @@ def delete_member(member_id):
     finally: conn.close()
     return redirect(url_for('band_dashboard'))
 
-# ================= 6. 歌迷功能模块 (Python版自动算分) =================
+# ================= 6. 歌迷功能模块 (Python版自动算分 + 网易云链接) =================
 @app.route('/fan', methods=['GET', 'POST'])
 def fan_dashboard():
     if session.get('role') != 'fan': return redirect(url_for('login'))
@@ -405,12 +411,23 @@ def fan_dashboard():
             cursor.execute("SELECT * FROM Album")
             albums = cursor.fetchall()
             
-            cursor.execute("SELECT b.name, b.band_id FROM Band b JOIN Fan_Like_Band f ON b.band_id=f.band_id WHERE f.fan_id=%s", (fan_id,))
+            # 关注列表 (这里也要加上链接)
+            cursor.execute("""
+                SELECT b.name, b.band_id, b.netease_url 
+                FROM Band b 
+                JOIN Fan_Like_Band f ON b.band_id=f.band_id 
+                WHERE f.fan_id=%s
+            """, (fan_id,))
             like_bands = cursor.fetchall()
+            
             cursor.execute("SELECT s.title, s.song_id FROM Song s JOIN Fan_Like_Song f ON s.song_id=f.song_id WHERE f.fan_id=%s", (fan_id,))
             like_songs = cursor.fetchall()
             
-            cursor.execute("SELECT s.song_id, s.title, s.authors, a.title as album_title FROM Song s JOIN Album a ON s.album_id = a.album_id")
+            # [新功能] 获取所有歌曲时，带上网易云链接
+            cursor.execute("""
+                SELECT s.song_id, s.title, s.authors, s.netease_url, a.title as album_title 
+                FROM Song s JOIN Album a ON s.album_id = a.album_id
+            """)
             all_songs = cursor.fetchall()
     finally:
         conn.close()
