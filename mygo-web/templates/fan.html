@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm text-center p-4 h-100">
+            <div class="mb-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                    {{ user_name[0] }}
+                </div>
+            </div>
+            <h4 class="fw-bold">{{ user_name }}</h4>
+            <div class="text-muted small mb-3">ID: #{{ my_profile.fan_id }} | {{ my_profile.gender }} | {{ my_profile.age }}岁</div>
+            
+            <hr class="opacity-10">
+            
+            <form method="POST">
+                <input type="hidden" name="action" value="update_profile">
+                <div class="mb-2 text-start"><label class="small fw-bold text-muted">职业</label><input name="occupation" class="form-control form-control-sm" value="{{ my_profile.occupation }}"></div>
+                <div class="mb-2 text-start"><label class="small fw-bold text-muted">学历</label><input name="education" class="form-control form-control-sm" value="{{ my_profile.education }}"></div>
+                <div class="mb-3 text-start"><label class="small fw-bold text-muted">年龄</label><input name="age" type="number" class="form-control form-control-sm" value="{{ my_profile.age }}"></div>
+                <button class="btn btn-outline-primary btn-sm w-100">更新资料</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-lg-9">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white pt-3">
+                <ul class="nav nav-tabs card-header-tabs" id="fanTab" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-likes">我的收藏</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rank">排行榜与打分</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-explore">发现音乐</button></li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="fanTabContent">
+                    
+                    <div class="tab-pane fade show active" id="tab-likes">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-3">关注的乐队</h6>
+                                <ul class="list-group list-group-flush">
+                                    {% for b in like_bands %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ b.name }}
+                                        <a href="{{ url_for('toggle_like', type='band', id=b.band_id) }}" class="btn btn-sm btn-outline-danger py-0">取关</a>
+                                    </li>
+                                    {% else %}<li class="list-group-item text-muted small">暂无关注</li>{% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-info mb-3">收藏的歌曲</h6>
+                                <ul class="list-group list-group-flush">
+                                    {% for s in like_songs %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ s.title }}
+                                        <a href="{{ url_for('toggle_like', type='song', id=s.song_id) }}" class="btn btn-sm btn-outline-danger py-0">取消</a>
+                                    </li>
+                                    {% else %}<li class="list-group-item text-muted small">暂无收藏</li>{% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-rank">
+                        <div class="row">
+                            <div class="col-lg-7 mb-4">
+                                <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-trophy-fill me-2"></i>全站专辑排行榜 Top 10</h6>
+                                <table class="table table-sm table-hover align-middle">
+                                    <thead class="bg-light"><tr><th>排名</th><th>专辑名</th><th>均分</th></tr></thead>
+                                    <tbody>
+                                        {% for r in ranks %}
+                                        <tr>
+                                            <td><span class="badge bg-secondary rounded-pill">{{ loop.index }}</span></td>
+                                            <td class="fw-bold">{{ r.title }}</td>
+                                            <td class="text-warning fw-bold">{{ r.score }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="bg-light p-3 rounded-3">
+                                    <h6 class="fw-bold mb-3">📝 提交评价</h6>
+                                    <form method="POST">
+                                        <input type="hidden" name="action" value="rate">
+                                        <div class="mb-2">
+                                            <select name="album_id" class="form-select form-select-sm" required>
+                                                <option value="" disabled selected>选择专辑...</option>
+                                                {% for a in albums %}<option value="{{ a.album_id }}">{{ a.title }}</option>{% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <input type="number" name="score" class="form-control form-control-sm" placeholder="评分 (0-10)" step="0.1" max="10" min="0" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <textarea name="comment" class="form-control form-control-sm" rows="3" placeholder="写下你的听后感..." required></textarea>
+                                        </div>
+                                        <button class="btn btn-warning btn-sm w-100">提交打分</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-explore">
+                        <h6 class="fw-bold mb-3">全部歌曲列表</h6>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead><tr><th>歌曲</th><th>专辑</th><th>操作</th></tr></thead>
+                                <tbody>
+                                    {% for s in all_songs %}
+                                    <tr>
+                                        <td>{{ s.title }} <small class="text-muted d-block">{{ s.authors }}</small></td>
+                                        <td><span class="badge bg-light text-dark border">{{ s.album_title }}</span></td>
+                                        <td>
+                                            <a href="{{ url_for('toggle_like', type='song', id=s.song_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                <i class="bi bi-heart"></i> 收藏
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

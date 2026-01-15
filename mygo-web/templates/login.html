@@ -1,66 +1,60 @@
 
-
-{% extends 'layout.html' %}
+{% extends "base.html" %}
 
 {% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-primary">欢迎登录</h3>
+                    <p class="text-muted small">MyGO 乐队数据库管理系统</p>
+                </div>
 
-<div style="display: flex; justify-content: center; align-items: center; min-height: 75vh;">
-    
-    <article style="width: 100%; max-width: 420px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);">
-        
-        <div style="background: rgba(56, 100, 255, 0.2); padding: 30px 20px; text-align: center;">
-            <h2 style="margin-bottom: 5px; font-size: 1.8rem;">🎸 邦邦人通行证</h2>
-            <small style="opacity: 0.8; color: #a5b4fc;">MyGO & Ave Mujica Database</small>
-        </div>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">选择身份</label>
+                        <select name="role" class="form-select" id="roleSelect" onchange="toggleHint()">
+                            <option value="fan">🎤 歌迷 (Fan)</option>
+                            <option value="band">🎸 乐队 (Band)</option>
+                            <option value="admin">🔧 管理员 (Admin)</option>
+                        </select>
+                    </div>
 
-        <div style="padding: 30px;">
-            
-            <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; margin-bottom: 25px; font-size: 0.85rem; border: 1px dashed rgba(255,255,255,0.2); text-align: center;">
-                <strong style="display: block; margin-bottom: 8px; color: #facc15;">💡 管理员预设测试账号:</strong>
-                <div style="display: flex; justify-content: center; gap: 15px; font-family: monospace; font-size: 1rem;">
-                    <span style="background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                        👤 邦邦人
-                    </span>
-                    <span style="background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
-                        🔑 123
-                    </span>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">账号 / 乐队名</label>
+                        <input type="text" name="username" class="form-control" placeholder="请输入用户名" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">密码</label>
+                        <input type="password" name="password" class="form-control" placeholder="请输入密码" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">登 录</button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted" id="loginHint">
+                        <i class="bi bi-info-circle me-1"></i> 歌迷请直接输入注册时的用户名
+                    </small>
                 </div>
             </div>
-
-            <form action="/login" method="POST">
-                
-                <label style="margin-bottom: 15px;">
-                    <span style="font-size: 0.9rem; margin-left: 2px;">用户名</span>
-                    <div style="position: relative; margin-top: 5px;">
-                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.7;">👤</span>
-                        <input type="text" name="username" required 
-                               style="padding-left: 40px; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
-                    </div>
-                </label>
-                
-                <label style="margin-bottom: 25px;">
-                    <span style="font-size: 0.9rem; margin-left: 2px;">密码</span>
-                    <div style="position: relative; margin-top: 5px;">
-                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔒</span>
-                        <input type="password" name="password" required 
-                               style="padding-left: 40px; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
-                    </div>
-                </label>
-
-                <div style="display: grid; gap: 15px;">
-                    <button type="submit" style="width: 100%; font-weight: 800; background-color: #3b82f6; border-color: #3b82f6;">
-                        🚀 立即登录
-                    </button>
-                    
-                    <a href="/" role="button" class="secondary outline" style="width: 100%; border: none; opacity: 0.7;">
-                        取消 / 返回主页
-                    </a>
-                </div>
-            </form>
-
         </div>
-    </article>
-
+    </div>
 </div>
 
+<script>
+    function toggleHint() {
+        var role = document.getElementById("roleSelect").value;
+        var hint = document.getElementById("loginHint");
+        if(role === 'band') {
+            hint.innerHTML = '<i class="bi bi-music-note-beamed me-1"></i> 请输入乐队全名 (如 MyGO!!!!!)';
+        } else if(role === 'admin') {
+            hint.innerHTML = '<i class="bi bi-shield-lock me-1"></i> 系统管理员专用通道';
+        } else {
+            hint.innerHTML = '<i class="bi bi-person me-1"></i> 歌迷请直接输入注册时的用户名';
+        }
+    }
+</script>
 {% endblock %}

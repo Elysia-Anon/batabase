@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <span class="badge bg-dark rounded-pill mb-2 px-3">乐队管理后台</span>
+                <h1 class="fw-bold display-5 mb-0">{{ band_name }}</h1>
+            </div>
+            <button class="btn btn-outline-dark rounded-pill px-4" type="button" data-bs-toggle="collapse" data-bs-target="#editIntro">
+                <i class="bi bi-pencil-square me-1"></i> 修改简介
+            </button>
+        </div>
+        
+        <div class="collapse mt-3" id="editIntro">
+            <div class="bg-light p-4 rounded-4">
+                <form method="POST">
+                    <input type="hidden" name="action" value="update_intro">
+                    <label class="small fw-bold text-muted mb-2">乐队简介内容</label>
+                    <textarea name="intro" class="form-control bg-white mb-3 shadow-sm" rows="4">{{ intro }}</textarea>
+                    <div class="text-end"><button class="btn btn-dark px-4">保存修改</button></div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-3 text-muted lead fs-6">
+            {{ intro }}
+        </div>
+    </div>
+</div>
+
+{% if stats %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white pt-3 pb-2">
+        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-bar-chart-fill me-2"></i> 粉丝数据分析</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">核心指标</h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                            <div class="text-primary h2 mb-0 fw-bold">{{ stats.total_fans }}</div>
+                            <div class="small text-muted">粉丝总数</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                            <div class="text-info h2 mb-0 fw-bold">{{ stats.avg_age | round(1) }}</div>
+                            <div class="small text-muted">平均年龄</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                            <div class="text-danger h2 mb-0 fw-bold">{{ stats.female_count }}</div>
+                            <div class="small text-muted">女性粉丝</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center h-100">
+                            <div class="text-success h2 mb-0 fw-bold">{{ stats.bachelor_count }}</div>
+                            <div class="small text-muted">本科及以上</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">作品热度排行 (Top 5)</h6>
+                
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">🔥 热门歌曲 (收藏数)</small>
+                    <ul class="list-group">
+                        {% for s in song_stats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                            <span>{{ s.song_title }}</span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">{{ s.like_count }} <i class="bi bi-heart-fill"></i></span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small">暂无数据</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block mb-1">🎫 热门Live (报名数)</small>
+                    <ul class="list-group">
+                        {% for c in concert_stats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                            <span>{{ c.concert_name }}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ c.attend_count }} <i class="bi bi-ticket-fill"></i></span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small">暂无数据</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-light border shadow-sm mb-4 d-flex align-items-center p-4" role="alert">
+    <i class="bi bi-stars fs-1 text-warning me-4"></i>
+    <div>
+        <h5 class="fw-bold mb-1">欢迎加入 MyGO Database!</h5>
+        <p class="mb-0 text-muted">
+            您的乐队暂无统计数据。请先录入成员、发布专辑并举办演唱会，
+            当粉丝开始收藏您的作品后，这里将自动生成详细的分析报表。
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white pt-3 pb-2">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-badge me-2"></i> 成员名单</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-hover">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">姓名</th>
+                        <th>担当</th>
+                        <th>性别</th>
+                        <th>加入时间</th>
+                        <th class="text-end pe-4">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in members %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ m.name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ m.role }}</span></td>
+                        <td>{{ m.gender }}</td>
+                        <td class="text-muted small">{{ m.join_date }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{{ url_for('delete_member', member_id=m.member_id) }}" 
+                               class="btn btn-sm btn-outline-secondary border-0"
+                               onclick="return confirm('确定移除 {{ m.name }} 吗？')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">暂无成员，请联系管理员添加。</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white pt-3 pb-2 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-ticket-perforated-fill me-2"></i> 演唱会行程</h5>
+        <button class="btn btn-sm btn-danger rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#addConcert">
+            <i class="bi bi-plus-lg"></i> 发布预告
+        </button>
+    </div>
+    
+    <div class="card-body">
+        <div class="collapse mb-4" id="addConcert">
+            <div class="bg-light p-4 rounded-3 border border-danger border-opacity-10">
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_concert">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold">演唱会名称</label>
+                            <input name="name" class="form-control" placeholder="例如：1st LIVE" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-bold">时间</label>
+                            <input name="hold_time" type="datetime-local" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-bold">地点</label>
+                            <input name="location" class="form-control" required>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button class="btn btn-danger px-4">确认发布</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <ul class="list-group list-group-flush">
+            {% for c in my_concerts %}
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                <div>
+                    <h6 class="fw-bold mb-1">{{ c.name }}</h6>
+                    <div class="text-muted small">
+                        <i class="bi bi-clock me-1"></i> {{ c.hold_time }} 
+                        <span class="mx-2">|</span> 
+                        <i class="bi bi-geo-alt me-1"></i> {{ c.location }}
+                    </div>
+                </div>
+                <a href="{{ url_for('delete_concert', concert_id=c.concert_id) }}" class="btn btn-sm btn-light text-muted" onclick="return confirm('确定取消这场演唱会吗？')">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="list-group-item text-center py-4 text-muted">暂无行程安排</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white pt-3 pb-2">
+        <h5 class="fw-bold mb-0 text-info"><i class="bi bi-disc-fill me-2"></i> 音乐作品管理</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addAlbum">
+                <i class="bi bi-plus-circle me-1"></i> 发布专辑
+            </button>
+            <button class="btn btn-outline-info rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addSong">
+                <i class="bi bi-music-note-list me-1"></i> 录入歌曲
+            </button>
+        </div>
+
+        <div class="collapse mb-3" id="addAlbum">
+            <div class="bg-light p-4 rounded-3 border border-primary border-opacity-10">
+                <h6 class="fw-bold mb-3 text-primary">💿 新建专辑</h6>
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_album">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="small text-muted fw-bold">专辑名称</label>
+                            <input name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small text-muted fw-bold">发行日期</label>
+                            <input name="release_date" type="date" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small text-muted fw-bold">文案</label>
+                            <input name="intro" class="form-control" placeholder="简短介绍...">
+                        </div>
+                        <div class="col-12 text-end"><button class="btn btn-primary px-4">发布</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="collapse mb-4" id="addSong">
+            <div class="bg-light p-4 rounded-3 border border-info border-opacity-10">
+                <h6 class="fw-bold mb-3 text-info">🎵 录入单曲</h6>
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_song">
+                    <div class="row g-3">
+                        <div class="col-md-
